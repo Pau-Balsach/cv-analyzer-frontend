@@ -5,6 +5,25 @@ import { createClient } from '@/lib/supabase'
 import { uploadCv, getAnalysis } from '@/lib/api'
 import { useRouter } from 'next/navigation'
 
+// ─── Toast component ────────────────────────────────────────────────────────
+function ErrorToast({ message, onClose }: { message: string; onClose: () => void }) {
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-red-600 text-white px-5 py-3 rounded-xl shadow-lg animate-fade-in">
+      <span className="text-lg">⚠️</span>
+      <p className="text-sm font-medium">{message}</p>
+      <button
+        onClick={onClose}
+        className="ml-2 text-white/70 hover:text-white text-lg leading-none"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+    </div>
+  )
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
 export default function DashboardPage() {
   const [dragging, setDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -13,10 +32,13 @@ export default function DashboardPage() {
   const router = useRouter()
   const supabase = createClient()
 
+  function showError(msg: string) {
+    setError(msg)
+    setTimeout(() => setError(''), 5000)
+  }
+
   async function getToken(): Promise<{ token: string; userId: string }> {
-    const { data: { session }, error } = await supabase.auth.getSession()
-    console.log('Session:', session)
-    console.log('Error:', error)
+    const { data: { session } } = await supabase.auth.getSession()
     if (!session) throw new Error('No hay sesión activa')
     return {
       token: session.access_token,
@@ -26,11 +48,11 @@ export default function DashboardPage() {
 
   async function handleFile(file: File) {
     if (!file.type.includes('pdf')) {
-      setError('Solo se permiten archivos PDF')
+      showError('Solo se permiten archivos PDF')
       return
     }
     if (file.size > 5 * 1024 * 1024) {
-      setError('El archivo no puede superar 5MB')
+      showError('El archivo no puede superar 5MB')
       return
     }
 
@@ -39,12 +61,7 @@ export default function DashboardPage() {
 
     try {
       const { token, userId } = await getToken()
-      console.log('Token:', token)
-      console.log('UserId:', userId)
-
       const result = await uploadCv(file, token, userId)
-      console.log('Upload result:', result)
-
       const { analysisId } = result
 
       setUploading(false)
@@ -60,15 +77,14 @@ export default function DashboardPage() {
         } else if (analysis.status === 'FAILED') {
           clearInterval(interval)
           setPolling(false)
-          setError('Error analizando el CV. Inténtalo de nuevo.')
+          showError('Error analizando el CV. Inténtalo de nuevo.')
         }
       }, 3000)
 
     } catch (e) {
-      console.error('Error en handleFile:', e)
       setUploading(false)
       setPolling(false)
-      setError('Error subiendo el CV. Inténtalo de nuevo.')
+      showError('Error subiendo el CV. Inténtalo de nuevo.')
     }
   }
 
@@ -98,6 +114,9 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Toast de error */}
+      {error && <ErrorToast message={error} onClose={() => setError('')} />}
+
       {/* Header */}
       <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold text-gray-800">CV Analyzer</h1>
@@ -159,13 +178,6 @@ export default function DashboardPage() {
             <div className="text-5xl mb-4 animate-spin">🔄</div>
             <p className="text-gray-700 font-medium mb-1">Analizando con IA...</p>
             <p className="text-gray-400 text-sm">Esto puede tardar unos segundos</p>
-          </div>
-        )}
-
-        {/* Error */}
-        {error && (
-          <div className="mt-4 bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center">
-            {error}
           </div>
         )}
       </main>

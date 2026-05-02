@@ -33,6 +33,67 @@ interface JobMatchResult {
   recommendations: string[]
 }
 
+// ─── Skeleton ────────────────────────────────────────────────────────────────
+function Skeleton({ className }: { className?: string }) {
+  return (
+    <div className={`animate-pulse bg-gray-200 rounded-lg ${className ?? ''}`} />
+  )
+}
+
+function ResultSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+        <Skeleton className="h-6 w-32" />
+        <div className="flex gap-4">
+          <Skeleton className="h-5 w-20" />
+          <Skeleton className="h-5 w-28" />
+        </div>
+      </header>
+
+      <main className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+        {/* Score gauge */}
+        <div className="bg-white rounded-xl shadow-sm p-8 flex flex-col items-center gap-4">
+          <Skeleton className="w-36 h-36 rounded-full" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+
+        {/* Secciones */}
+        <div className="bg-white rounded-xl shadow-sm p-6 space-y-5">
+          <Skeleton className="h-5 w-44" />
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="space-y-2">
+              <div className="flex justify-between">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-12" />
+              </div>
+              <Skeleton className="h-2 w-full" />
+              <Skeleton className="h-3 w-3/4" />
+            </div>
+          ))}
+        </div>
+
+        {/* Puntos fuertes / débiles */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2].map(i => (
+            <div key={i} className="bg-white rounded-xl shadow-sm p-6 space-y-3">
+              <Skeleton className="h-5 w-36" />
+              {[1, 2, 3].map(j => <Skeleton key={j} className="h-4 w-full" />)}
+            </div>
+          ))}
+        </div>
+
+        {/* Mejoras */}
+        <div className="bg-white rounded-xl shadow-sm p-6 space-y-3">
+          <Skeleton className="h-5 w-44" />
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-4 w-full" />)}
+        </div>
+      </main>
+    </div>
+  )
+}
+
+// ─── Score gauge ─────────────────────────────────────────────────────────────
 function ScoreGauge({ score }: { score: number }) {
   const color = score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444'
   const circumference = 2 * Math.PI * 54
@@ -66,7 +127,7 @@ function ScoreGauge({ score }: { score: number }) {
   )
 }
 
-function SectionBar({ label, score, feedback }: { label: string, score: number, feedback: string }) {
+function SectionBar({ label, score, feedback }: { label: string; score: number; feedback: string }) {
   const color = score >= 70 ? 'bg-green-500' : score >= 40 ? 'bg-yellow-400' : 'bg-red-400'
   return (
     <div className="mb-4">
@@ -82,7 +143,8 @@ function SectionBar({ label, score, feedback }: { label: string, score: number, 
   )
 }
 
-function JobMatchPanel({ analysisId, token }: { analysisId: string, token: string }) {
+// ─── Job Match ────────────────────────────────────────────────────────────────
+function JobMatchPanel({ analysisId, token }: { analysisId: string; token: string }) {
   const [jobDescription, setJobDescription] = useState('')
   const [result, setResult] = useState<JobMatchResult | null>(null)
   const [loading, setLoading] = useState(false)
@@ -128,9 +190,7 @@ function JobMatchPanel({ analysisId, token }: { analysisId: string, token: strin
         {loading ? 'Analizando...' : 'Comparar con oferta'}
       </button>
 
-      {error && (
-        <p className="text-red-500 text-sm mt-3 text-center">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-sm mt-3 text-center">{error}</p>}
 
       {result && (
         <div className="mt-6 space-y-4">
@@ -138,15 +198,12 @@ function JobMatchPanel({ analysisId, token }: { analysisId: string, token: strin
             <p className="text-sm text-gray-500 mb-1">Compatibilidad</p>
             <p className={`text-5xl font-bold ${scoreColor}`}>{result.matchScore}%</p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-gray-700 mb-2">✅ Skills que tienes</p>
               <div className="flex flex-wrap gap-2">
                 {result.matchedSkills.map((s, i) => (
-                  <span key={i} className="bg-green-50 text-green-700 border border-green-200 text-xs px-3 py-1 rounded-full">
-                    {s}
-                  </span>
+                  <span key={i} className="bg-green-50 text-green-700 border border-green-200 text-xs px-3 py-1 rounded-full">{s}</span>
                 ))}
               </div>
             </div>
@@ -154,14 +211,11 @@ function JobMatchPanel({ analysisId, token }: { analysisId: string, token: strin
               <p className="text-sm font-medium text-gray-700 mb-2">❌ Skills que faltan</p>
               <div className="flex flex-wrap gap-2">
                 {result.missingSkills.map((s, i) => (
-                  <span key={i} className="bg-red-50 text-red-600 border border-red-200 text-xs px-3 py-1 rounded-full">
-                    {s}
-                  </span>
+                  <span key={i} className="bg-red-50 text-red-600 border border-red-200 text-xs px-3 py-1 rounded-full">{s}</span>
                 ))}
               </div>
             </div>
           </div>
-
           <div>
             <p className="text-sm font-medium text-gray-700 mb-2">💡 Recomendaciones</p>
             <ul className="space-y-2">
@@ -178,6 +232,7 @@ function JobMatchPanel({ analysisId, token }: { analysisId: string, token: strin
   )
 }
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function ResultPage() {
   const { id } = useParams()
   const router = useRouter()
@@ -198,14 +253,7 @@ export default function ResultPage() {
     load()
   }, [id])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Cargando resultados...</p>
-      </div>
-    )
-  }
-
+  if (loading) return <ResultSkeleton />
   if (!analysis) return null
 
   return (
@@ -213,23 +261,16 @@ export default function ResultPage() {
       <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold text-gray-800">CV Analyzer</h1>
         <div className="flex gap-4">
-          <button
-            onClick={() => router.push('/history')}
-            className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
-          >
+          <button onClick={() => router.push('/history')} className="text-sm text-gray-500 hover:text-gray-800 transition-colors">
             📋 Historial
           </button>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="text-sm text-blue-600 hover:underline"
-          >
+          <button onClick={() => router.push('/dashboard')} className="text-sm text-blue-600 hover:underline">
             ← Analizar otro CV
           </button>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-10 space-y-6">
-
         <div className="bg-white rounded-xl shadow-sm p-8 flex flex-col items-center">
           <ScoreGauge score={analysis.score} />
         </div>
@@ -282,16 +323,13 @@ export default function ResultPage() {
             <h2 className="text-lg font-bold text-gray-800 mb-3">🔍 Keywords ATS que faltan</h2>
             <div className="flex flex-wrap gap-2">
               {analysis.missingKeywords.map((kw, i) => (
-                <span key={i} className="bg-orange-50 text-orange-600 border border-orange-200 text-xs px-3 py-1 rounded-full">
-                  {kw}
-                </span>
+                <span key={i} className="bg-orange-50 text-orange-600 border border-orange-200 text-xs px-3 py-1 rounded-full">{kw}</span>
               ))}
             </div>
           </div>
         )}
 
         <JobMatchPanel analysisId={id as string} token={token} />
-
       </main>
     </div>
   )
