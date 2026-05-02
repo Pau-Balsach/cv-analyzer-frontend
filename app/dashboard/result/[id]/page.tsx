@@ -91,7 +91,7 @@ function ResultSkeleton() {
 }
 
 // ─── Score gauge ─────────────────────────────────────────────────────────────
-function ScoreGauge({ score }: { score: number }) {
+function ScoreGauge({ score, label }: { score: number; label: string }) {
   const color = score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444'
   const circumference = 2 * Math.PI * 54
   const offset = circumference - (score / 100) * circumference
@@ -118,9 +118,8 @@ function ScoreGauge({ score }: { score: number }) {
         <text x="70" y="92" textAnchor="middle" fontSize="11" fill="#9ca3af">
           / 100
         </text>
-          <p className="text-gray-500 text-sm mt-1">{label}</p>
       </svg>
-      <p className="text-gray-500 text-sm mt-1">Puntuación general</p>
+      <p className="text-gray-500 text-sm mt-1">{label}</p>
     </div>
   )
 }
