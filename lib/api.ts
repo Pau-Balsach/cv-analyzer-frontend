@@ -17,10 +17,11 @@ export async function uploadCv(file: File, token: string, userId: string) {
   return response.json()
 }
 
-export async function getAnalysis(analysisId: string, token: string) {
+export async function getAnalysis(analysisId: string, token: string, userId: string) {
   const response = await fetch(`${API_URL}/api/analysis/${analysisId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
+      'X-User-Id': userId,
     },
   })
 
@@ -28,12 +29,13 @@ export async function getAnalysis(analysisId: string, token: string) {
   return response.json()
 }
 
-export async function jobMatch(analysisId: string, jobDescription: string, token: string) {
+export async function jobMatch(analysisId: string, jobDescription: string, token: string, userId: string) {
   const response = await fetch(`${API_URL}/api/analysis/${analysisId}/job-match`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
+      'X-User-Id': userId,
     },
     body: JSON.stringify({ jobDescription }),
   })

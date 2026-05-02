@@ -52,13 +52,11 @@ function ResultSkeleton() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-10 space-y-6">
-        {/* Score gauge */}
         <div className="bg-white rounded-xl shadow-sm p-8 flex flex-col items-center gap-4">
           <Skeleton className="w-36 h-36 rounded-full" />
           <Skeleton className="h-4 w-32" />
         </div>
 
-        {/* Secciones */}
         <div className="bg-white rounded-xl shadow-sm p-6 space-y-5">
           <Skeleton className="h-5 w-44" />
           {[1, 2, 3, 4].map(i => (
@@ -73,7 +71,6 @@ function ResultSkeleton() {
           ))}
         </div>
 
-        {/* Puntos fuertes / débiles */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2].map(i => (
             <div key={i} className="bg-white rounded-xl shadow-sm p-6 space-y-3">
@@ -83,7 +80,6 @@ function ResultSkeleton() {
           ))}
         </div>
 
-        {/* Mejoras */}
         <div className="bg-white rounded-xl shadow-sm p-6 space-y-3">
           <Skeleton className="h-5 w-44" />
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-4 w-full" />)}
@@ -144,7 +140,7 @@ function SectionBar({ label, score, feedback }: { label: string; score: number; 
 }
 
 // ─── Job Match ────────────────────────────────────────────────────────────────
-function JobMatchPanel({ analysisId, token }: { analysisId: string; token: string }) {
+function JobMatchPanel({ analysisId, token, userId }: { analysisId: string; token: string; userId: string }) {
   const [jobDescription, setJobDescription] = useState('')
   const [result, setResult] = useState<JobMatchResult | null>(null)
   const [loading, setLoading] = useState(false)
@@ -156,7 +152,7 @@ function JobMatchPanel({ analysisId, token }: { analysisId: string; token: strin
     setError('')
     setResult(null)
     try {
-      const data = await jobMatch(analysisId, jobDescription, token)
+      const data = await jobMatch(analysisId, jobDescription, token, userId)
       setResult(data)
     } catch {
       setError('Error analizando la oferta. Inténtalo de nuevo.')
@@ -239,6 +235,7 @@ export default function ResultPage() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
   const [loading, setLoading] = useState(true)
   const [token, setToken] = useState('')
+  const [userId, setUserId] = useState('')
   const supabase = createClient()
 
   useEffect(() => {
@@ -246,7 +243,8 @@ export default function ResultPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
       setToken(session.access_token)
-      const data = await getAnalysis(id as string, session.access_token)
+      setUserId(session.user.id)
+      const data = await getAnalysis(id as string, session.access_token, session.user.id)
       setAnalysis(data)
       setLoading(false)
     }
@@ -329,7 +327,7 @@ export default function ResultPage() {
           </div>
         )}
 
-        <JobMatchPanel analysisId={id as string} token={token} />
+        <JobMatchPanel analysisId={id as string} token={token} userId={userId} />
       </main>
     </div>
   )

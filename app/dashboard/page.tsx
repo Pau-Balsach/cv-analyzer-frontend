@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 // ─── Toast component ────────────────────────────────────────────────────────
 function ErrorToast({ message, onClose }: { message: string; onClose: () => void }) {
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-red-600 text-white px-5 py-3 rounded-xl shadow-lg animate-fade-in">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-red-600 text-white px-5 py-3 rounded-xl shadow-lg">
       <span className="text-lg">⚠️</span>
       <p className="text-sm font-medium">{message}</p>
       <button
@@ -67,9 +67,9 @@ export default function DashboardPage() {
       setUploading(false)
       setPolling(true)
 
-      // Polling cada 3 segundos
+      // Polling cada 3 segundos — userId capturado en closure
       const interval = setInterval(async () => {
-        const analysis = await getAnalysis(analysisId, token)
+        const analysis = await getAnalysis(analysisId, token, userId)
 
         if (analysis.status === 'COMPLETED') {
           clearInterval(interval)
