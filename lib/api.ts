@@ -1,5 +1,11 @@
 const API_URL = '/backend'
 
+function getLang(): string {
+  if (typeof navigator === 'undefined') return 'en'
+  const lang = navigator.language?.slice(0, 2).toLowerCase()
+  return ['es', 'en', 'fr', 'de', 'pt'].includes(lang) ? lang : 'en'
+}
+
 export async function uploadCv(file: File, token: string, userId: string) {
   const formData = new FormData()
   formData.append('file', file)
@@ -9,6 +15,7 @@ export async function uploadCv(file: File, token: string, userId: string) {
     headers: {
       Authorization: `Bearer ${token}`,
       'X-User-Id': userId,
+      'X-Language': getLang(),
     },
     body: formData,
   })
@@ -16,6 +23,8 @@ export async function uploadCv(file: File, token: string, userId: string) {
   if (!response.ok) throw new Error('Error subiendo el CV')
   return response.json()
 }
+
+
 
 export async function getAnalysis(analysisId: string, token: string, userId: string) {
   const response = await fetch(`${API_URL}/api/analysis/${analysisId}`, {
@@ -36,6 +45,7 @@ export async function jobMatch(analysisId: string, jobDescription: string, token
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
       'X-User-Id': userId,
+      'X-Language': getLang(),
     },
     body: JSON.stringify({ jobDescription }),
   })

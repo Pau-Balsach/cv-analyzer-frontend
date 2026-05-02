@@ -1,0 +1,51 @@
+{
+  "dashboard": {
+    "title": "CV Analyzer",
+    "logout": "Log out",
+    "heading": "Analyze your CV with AI",
+    "subheading": "Upload your PDF CV and get professional feedback in seconds",
+    "dropzone_text": "Drag your CV here or",
+    "dropzone_link": "select a file",
+    "dropzone_hint": "PDF · Max 5MB",
+    "uploading": "Uploading your CV...",
+    "analyzing": "Analyzing with AI...",
+    "analyzing_hint": "This may take a few seconds",
+    "error_pdf": "Only PDF files are allowed",
+    "error_size": "File size cannot exceed 5MB",
+    "error_upload": "Error uploading CV. Please try again.",
+    "error_analysis": "Error analyzing CV. Please try again."
+  },
+  "result": {
+    "title": "CV Analyzer",
+    "score_label": "Overall score",
+    "section_title": "Section breakdown",
+    "strengths": "Strengths",
+    "weaknesses": "Weaknesses",
+    "improvements": "Suggested improvements",
+    "keywords": "Missing ATS keywords",
+    "history_btn": "History",
+    "back_btn": "← Analyze another CV",
+    "jobmatch_title": "Job Matching",
+    "jobmatch_subtitle": "Paste a job description and compare it with your CV",
+    "jobmatch_placeholder": "Paste the job description here...",
+    "jobmatch_btn": "Compare with job",
+    "jobmatch_loading": "Analyzing...",
+    "jobmatch_error": "Error analyzing the job offer. Please try again.",
+    "compatibility": "Compatibility",
+    "matched_skills": "Skills you have",
+    "missing_skills": "Skills you're missing",
+    "recommendations": "Recommendations"
+  },
+  "history": {
+    "title": "CV Analyzer",
+    "heading": "Analysis history",
+    "back_btn": "← Back to dashboard",
+    "empty": "You have no analyses yet",
+    "empty_btn": "Analyze my first CV",
+    "analysis_label": "Analysis #",
+    "completed": "Completed",
+    "failed": "Failed",
+    "processing": "Processing...",
+    "view_btn": "View result →"
+  }
+}

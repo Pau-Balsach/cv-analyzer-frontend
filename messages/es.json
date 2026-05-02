@@ -1,0 +1,51 @@
+{
+  "dashboard": {
+    "title": "CV Analyzer",
+    "logout": "Cerrar sesión",
+    "heading": "Analiza tu CV con IA",
+    "subheading": "Sube tu CV en PDF y recibe feedback profesional en segundos",
+    "dropzone_text": "Arrastra tu CV aquí o",
+    "dropzone_link": "selecciona un archivo",
+    "dropzone_hint": "PDF · Máximo 5MB",
+    "uploading": "Subiendo tu CV...",
+    "analyzing": "Analizando con IA...",
+    "analyzing_hint": "Esto puede tardar unos segundos",
+    "error_pdf": "Solo se permiten archivos PDF",
+    "error_size": "El archivo no puede superar 5MB",
+    "error_upload": "Error subiendo el CV. Inténtalo de nuevo.",
+    "error_analysis": "Error analizando el CV. Inténtalo de nuevo."
+  },
+  "result": {
+    "title": "CV Analyzer",
+    "score_label": "Puntuación general",
+    "section_title": "Análisis por sección",
+    "strengths": "Puntos fuertes",
+    "weaknesses": "Puntos débiles",
+    "improvements": "Mejoras sugeridas",
+    "keywords": "Keywords ATS que faltan",
+    "history_btn": "Historial",
+    "back_btn": "← Analizar otro CV",
+    "jobmatch_title": "Job Matching",
+    "jobmatch_subtitle": "Pega la descripción de una oferta y compara con tu CV",
+    "jobmatch_placeholder": "Pega aquí la descripción del trabajo...",
+    "jobmatch_btn": "Comparar con oferta",
+    "jobmatch_loading": "Analizando...",
+    "jobmatch_error": "Error analizando la oferta. Inténtalo de nuevo.",
+    "compatibility": "Compatibilidad",
+    "matched_skills": "Skills que tienes",
+    "missing_skills": "Skills que faltan",
+    "recommendations": "Recomendaciones"
+  },
+  "history": {
+    "title": "CV Analyzer",
+    "heading": "Historial de análisis",
+    "back_btn": "← Volver al dashboard",
+    "empty": "No tienes análisis todavía",
+    "empty_btn": "Analizar mi primer CV",
+    "analysis_label": "Análisis #",
+    "completed": "Completado",
+    "failed": "Fallido",
+    "processing": "Procesando...",
+    "view_btn": "Ver resultado →"
+  }
+}

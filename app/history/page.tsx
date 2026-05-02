@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { getHistory } from '@/lib/api'
+import { useLocale } from '@/lib/useLocale'
 
 interface HistoryItem {
   analysisId: string
@@ -51,6 +52,8 @@ function HistorySkeleton() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function HistoryPage() {
   const router = useRouter()
+  const { messages } = useLocale()
+  const t = messages.history
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
@@ -71,42 +74,34 @@ export default function HistoryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-gray-800">CV Analyzer</h1>
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="text-sm text-blue-600 hover:underline"
-        >
-          ← Volver al dashboard
+        <h1 className="text-xl font-bold text-gray-800">{t.title}</h1>
+        <button onClick={() => router.push('/dashboard')} className="text-sm text-blue-600 hover:underline">
+          {t.back_btn}
         </button>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-10">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 Historial de análisis</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 {t.heading}</h2>
 
         {history.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <p className="text-gray-400 text-lg mb-2">No tienes análisis todavía</p>
+            <p className="text-gray-400 text-lg mb-2">{t.empty}</p>
             <button
               onClick={() => router.push('/dashboard')}
               className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
             >
-              Analizar mi primer CV
+              {t.empty_btn}
             </button>
           </div>
         ) : (
           <div className="space-y-4">
             {history.map((item) => {
-              const scoreColor = item.score >= 70
-                ? 'text-green-600'
-                : item.score >= 40
-                ? 'text-yellow-500'
-                : 'text-red-500'
+              const scoreColor = item.score >= 70 ? 'text-green-600' : item.score >= 40 ? 'text-yellow-500' : 'text-red-500'
+              const scoreBg = item.score >= 70 ? 'bg-green-50 border-green-200' : item.score >= 40 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'
 
-              const scoreBg = item.score >= 70
-                ? 'bg-green-50 border-green-200'
-                : item.score >= 40
-                ? 'bg-yellow-50 border-yellow-200'
-                : 'bg-red-50 border-red-200'
+              const statusLabel = item.status === 'COMPLETED' ? t.completed
+                : item.status === 'FAILED' ? t.failed
+                : t.processing
 
               return (
                 <div
@@ -122,14 +117,12 @@ export default function HistoryPage() {
                     </div>
                     <div>
                       <p className="font-medium text-gray-800">
-                        Análisis #{item.analysisId.slice(0, 8)}
+                        {t.analysis_label}{item.analysisId.slice(0, 8)}
                       </p>
-                      <p className="text-sm text-gray-400">
-                        {item.status === 'COMPLETED' ? 'Completado' : item.status === 'FAILED' ? 'Fallido' : 'Procesando...'}
-                      </p>
+                      <p className="text-sm text-gray-400">{statusLabel}</p>
                     </div>
                   </div>
-                  <span className="text-blue-600 text-sm hover:underline">Ver resultado →</span>
+                  <span className="text-blue-600 text-sm hover:underline">{t.view_btn}</span>
                 </div>
               )
             })}

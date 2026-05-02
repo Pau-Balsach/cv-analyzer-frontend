@@ -4,8 +4,9 @@ import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import { uploadCv, getAnalysis } from '@/lib/api'
 import { useRouter } from 'next/navigation'
+import { useLocale } from '@/lib/useLocale'
 
-// ─── Toast component ────────────────────────────────────────────────────────
+// ─── Toast ───────────────────────────────────────────────────────────────────
 function ErrorToast({ message, onClose }: { message: string; onClose: () => void }) {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-red-600 text-white px-5 py-3 rounded-xl shadow-lg">
@@ -22,9 +23,11 @@ function ErrorToast({ message, onClose }: { message: string; onClose: () => void
   )
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
+  const { messages } = useLocale()
+  const t = messages.dashboard
+
   const [dragging, setDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [polling, setPolling] = useState(false)
@@ -48,11 +51,11 @@ export default function DashboardPage() {
 
   async function handleFile(file: File) {
     if (!file.type.includes('pdf')) {
-      showError('Solo se permiten archivos PDF')
+      showError(t.error_pdf)
       return
     }
     if (file.size > 5 * 1024 * 1024) {
-      showError('El archivo no puede superar 5MB')
+      showError(t.error_size)
       return
     }
 
@@ -67,7 +70,6 @@ export default function DashboardPage() {
       setUploading(false)
       setPolling(true)
 
-      // Polling cada 3 segundos — userId capturado en closure
       const interval = setInterval(async () => {
         const analysis = await getAnalysis(analysisId, token, userId)
 
@@ -77,14 +79,14 @@ export default function DashboardPage() {
         } else if (analysis.status === 'FAILED') {
           clearInterval(interval)
           setPolling(false)
-          showError('Error analizando el CV. Inténtalo de nuevo.')
+          showError(t.error_analysis)
         }
       }, 3000)
 
-    } catch (e) {
+    } catch {
       setUploading(false)
       setPolling(false)
-      showError('Error subiendo el CV. Inténtalo de nuevo.')
+      showError(t.error_upload)
     }
   }
 
@@ -114,28 +116,24 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Toast de error */}
       {error && <ErrorToast message={error} onClose={() => setError('')} />}
 
-      {/* Header */}
       <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-gray-800">CV Analyzer</h1>
+        <h1 className="text-xl font-bold text-gray-800">{t.title}</h1>
         <button
           onClick={handleLogout}
           className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
         >
-          Cerrar sesión
+          {t.logout}
         </button>
       </header>
 
-      {/* Main */}
       <main className="max-w-2xl mx-auto px-4 py-16">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-800 mb-3">Analiza tu CV con IA</h2>
-          <p className="text-gray-500">Sube tu CV en PDF y recibe feedback profesional en segundos</p>
+          <h2 className="text-3xl font-bold text-gray-800 mb-3">{t.heading}</h2>
+          <p className="text-gray-500">{t.subheading}</p>
         </div>
 
-        {/* Dropzone */}
         {!uploading && !polling && (
           <div
             onDrop={onDrop}
@@ -149,9 +147,9 @@ export default function DashboardPage() {
           >
             <div className="text-5xl mb-4">📄</div>
             <p className="text-gray-600 font-medium mb-2">
-              Arrastra tu CV aquí o{' '}
+              {t.dropzone_text}{' '}
               <label className="text-blue-600 hover:underline cursor-pointer">
-                selecciona un archivo
+                {t.dropzone_link}
                 <input
                   type="file"
                   accept=".pdf"
@@ -160,24 +158,22 @@ export default function DashboardPage() {
                 />
               </label>
             </p>
-            <p className="text-gray-400 text-sm">PDF · Máximo 5MB</p>
+            <p className="text-gray-400 text-sm">{t.dropzone_hint}</p>
           </div>
         )}
 
-        {/* Estado: subiendo */}
         {uploading && (
           <div className="bg-white rounded-xl p-12 text-center shadow-sm">
             <div className="text-5xl mb-4 animate-bounce">⬆️</div>
-            <p className="text-gray-700 font-medium">Subiendo tu CV...</p>
+            <p className="text-gray-700 font-medium">{t.uploading}</p>
           </div>
         )}
 
-        {/* Estado: analizando */}
         {polling && (
           <div className="bg-white rounded-xl p-12 text-center shadow-sm">
             <div className="text-5xl mb-4 animate-spin">🔄</div>
-            <p className="text-gray-700 font-medium mb-1">Analizando con IA...</p>
-            <p className="text-gray-400 text-sm">Esto puede tardar unos segundos</p>
+            <p className="text-gray-700 font-medium mb-1">{t.analyzing}</p>
+            <p className="text-gray-400 text-sm">{t.analyzing_hint}</p>
           </div>
         )}
       </main>
