@@ -2,7 +2,7 @@
 
 Frontend de la aplicación **AI CV Analyzer**, una herramienta web que analiza CVs con inteligencia artificial y devuelve feedback accionable para mejorarlos.
 
-🔗 **Demo en vivo:** [cv-analyzer-frontend.vercel.app](https://cv-analyzer-frontend-3zfpro27h-pau-balsachs-projects.vercel.app/)
+🔗 **Demo en vivo:** [cv-analyzer-frontend.vercel.app](https://cvanalyzer-ai.vercel.app)
 
 ---
 
