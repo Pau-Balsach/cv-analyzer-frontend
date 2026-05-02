@@ -44,8 +44,6 @@ CLAUDE.md
 # Config files (generados por create-next-app)
 eslint.config.mjs
 middleware.ts
-next.config.ts
-package.json
 package-lock.json
 postcss.config.mjs
 tsconfig.json
