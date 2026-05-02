@@ -27,3 +27,29 @@ export async function getAnalysis(analysisId: string, token: string) {
   if (!response.ok) throw new Error('Error obteniendo el análisis')
   return response.json()
 }
+
+export async function jobMatch(analysisId: string, jobDescription: string, token: string) {
+  const response = await fetch(`${API_URL}/api/analysis/${analysisId}/job-match`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ jobDescription }),
+  })
+
+  if (!response.ok) throw new Error('Error en job match')
+  return response.json()
+}
+
+export async function getHistory(token: string, userId: string) {
+  const response = await fetch(`${API_URL}/api/history`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'X-User-Id': userId,
+    },
+  })
+
+  if (!response.ok) throw new Error('Error obteniendo el historial')
+  return response.json()
+}

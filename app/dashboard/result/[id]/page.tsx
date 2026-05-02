@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { getAnalysis } from '@/lib/api'
+import { getAnalysis, jobMatch } from '@/lib/api'
 
 interface Section {
   score: number
@@ -24,6 +24,13 @@ interface Analysis {
     skills: Section
     format: Section
   }
+}
+
+interface JobMatchResult {
+  matchScore: number
+  matchedSkills: string[]
+  missingSkills: string[]
+  recommendations: string[]
 }
 
 function ScoreGauge({ score }: { score: number }) {
@@ -75,17 +82,115 @@ function SectionBar({ label, score, feedback }: { label: string, score: number, 
   )
 }
 
+function JobMatchPanel({ analysisId, token }: { analysisId: string, token: string }) {
+  const [jobDescription, setJobDescription] = useState('')
+  const [result, setResult] = useState<JobMatchResult | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleMatch() {
+    if (!jobDescription.trim()) return
+    setLoading(true)
+    setError('')
+    setResult(null)
+    try {
+      const data = await jobMatch(analysisId, jobDescription, token)
+      setResult(data)
+    } catch {
+      setError('Error analizando la oferta. Inténtalo de nuevo.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const scoreColor = result
+    ? result.matchScore >= 70 ? 'text-green-600' : result.matchScore >= 40 ? 'text-yellow-500' : 'text-red-500'
+    : ''
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-6">
+      <h2 className="text-lg font-bold text-gray-800 mb-1">🎯 Job Matching</h2>
+      <p className="text-sm text-gray-500 mb-4">Pega la descripción de una oferta y compara con tu CV</p>
+
+      <textarea
+        value={jobDescription}
+        onChange={e => setJobDescription(e.target.value)}
+        placeholder="Pega aquí la descripción del trabajo..."
+        rows={5}
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none mb-3"
+      />
+
+      <button
+        onClick={handleMatch}
+        disabled={loading || !jobDescription.trim()}
+        className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+      >
+        {loading ? 'Analizando...' : 'Comparar con oferta'}
+      </button>
+
+      {error && (
+        <p className="text-red-500 text-sm mt-3 text-center">{error}</p>
+      )}
+
+      {result && (
+        <div className="mt-6 space-y-4">
+          <div className="text-center">
+            <p className="text-sm text-gray-500 mb-1">Compatibilidad</p>
+            <p className={`text-5xl font-bold ${scoreColor}`}>{result.matchScore}%</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">✅ Skills que tienes</p>
+              <div className="flex flex-wrap gap-2">
+                {result.matchedSkills.map((s, i) => (
+                  <span key={i} className="bg-green-50 text-green-700 border border-green-200 text-xs px-3 py-1 rounded-full">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">❌ Skills que faltan</p>
+              <div className="flex flex-wrap gap-2">
+                {result.missingSkills.map((s, i) => (
+                  <span key={i} className="bg-red-50 text-red-600 border border-red-200 text-xs px-3 py-1 rounded-full">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-2">💡 Recomendaciones</p>
+            <ul className="space-y-2">
+              {result.recommendations.map((r, i) => (
+                <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
+                  <span className="text-blue-400 mt-0.5">→</span>{r}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function ResultPage() {
   const { id } = useParams()
   const router = useRouter()
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
   const [loading, setLoading] = useState(true)
+  const [token, setToken] = useState('')
   const supabase = createClient()
 
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
+      setToken(session.access_token)
       const data = await getAnalysis(id as string, session.access_token)
       setAnalysis(data)
       setLoading(false)
@@ -105,35 +210,39 @@ export default function ResultPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold text-gray-800">CV Analyzer</h1>
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="text-sm text-blue-600 hover:underline"
-        >
-          ← Analizar otro CV
-        </button>
+        <div className="flex gap-4">
+          <button
+            onClick={() => router.push('/history')}
+            className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            📋 Historial
+          </button>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            ← Analizar otro CV
+          </button>
+        </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-10 space-y-6">
 
-        {/* Score */}
         <div className="bg-white rounded-xl shadow-sm p-8 flex flex-col items-center">
           <ScoreGauge score={analysis.score} />
         </div>
 
-        {/* Secciones */}
         {analysis.sections && (
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Análisis por sección</h2>
             {Object.entries(analysis.sections).map(([key, val]) => (
-              <SectionBar key={key} label={key} score={val.score} feedback={val.feedback} />
+              <SectionBar key={key} label={key} score={(val as Section).score} feedback={(val as Section).feedback} />
             ))}
           </div>
         )}
 
-        {/* Fortalezas y debilidades */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-3">✅ Puntos fuertes</h2>
@@ -145,7 +254,6 @@ export default function ResultPage() {
               ))}
             </ul>
           </div>
-
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-3">⚠️ Puntos débiles</h2>
             <ul className="space-y-2">
@@ -158,7 +266,6 @@ export default function ResultPage() {
           </div>
         </div>
 
-        {/* Mejoras */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-lg font-bold text-gray-800 mb-3">💡 Mejoras sugeridas</h2>
           <ul className="space-y-2">
@@ -170,7 +277,6 @@ export default function ResultPage() {
           </ul>
         </div>
 
-        {/* Keywords ATS */}
         {analysis.missingKeywords?.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-3">🔍 Keywords ATS que faltan</h2>
@@ -183,6 +289,8 @@ export default function ResultPage() {
             </div>
           </div>
         )}
+
+        <JobMatchPanel analysisId={id as string} token={token} />
 
       </main>
     </div>
