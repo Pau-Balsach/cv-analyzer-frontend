@@ -274,11 +274,10 @@ export default function ResultPage() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-10 space-y-6">
-        <div className="bg-white rounded-xl shadow-sm p-8 flex flex-col items-center">
-          <ScoreGauge score={analysis.score} />
-        </div>
-
+    <main className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+      <div className="bg-white rounded-xl shadow-sm p-8 flex flex-col items-center">
+        <ScoreGauge score={analysis.score} label={t.score_label} />
+      </div>
         {analysis.sections && (
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-4">{t.section_title}</h2>
