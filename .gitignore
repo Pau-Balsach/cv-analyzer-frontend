@@ -45,4 +45,3 @@ CLAUDE.md
 eslint.config.mjs
 package-lock.json
 postcss.config.mjs
-tsconfig.json
