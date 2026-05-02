@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CV Analyzer — Frontend
 
-## Getting Started
+Frontend de la aplicación **AI CV Analyzer**, una herramienta web que analiza CVs con inteligencia artificial y devuelve feedback accionable para mejorarlos.
 
-First, run the development server:
+🔗 **Demo en vivo:** [cv-analyzer-frontend.vercel.app](https://cv-analyzer-frontend-3zfpro27h-pau-balsachs-projects.vercel.app/)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## ¿Qué hace?
+
+- El usuario sube su CV en formato PDF
+- El frontend lo envía al backend (Spring Boot) vía API REST
+- Mientras la IA procesa el CV, hace polling automático cada 3 segundos
+- Cuando el análisis termina, muestra:
+  - **Score global** del CV (0–100)
+  - **Puntos fuertes** detectados
+  - **Puntos débiles** a mejorar
+  - **Sugerencias concretas** de mejora
+  - **Keywords ATS** que faltan en el CV
+
+---
+
+## Stack
+
+| Tecnología | Uso |
+|---|---|
+| Next.js 14 (App Router) | Framework frontend |
+| TypeScript | Tipado estático |
+| Tailwind CSS | Estilos |
+| Supabase JS | Autenticación y sesión de usuario |
+
+---
+
+## Páginas
+
+| Ruta | Descripción |
+|---|---|
+| `/` | Landing / página principal |
+| `/login` | Inicio de sesión con Supabase Auth |
+| `/register` | Registro de nuevo usuario |
+| `/dashboard` | Subida del CV (drag & drop) |
+| `/dashboard/result/[id]` | Resultado del análisis |
+
+---
+
+## Variables de entorno
+
+Crea un archivo `.env.local` en la raíz con:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
+NEXT_PUBLIC_API_URL=https://cv-analyzer-backend-rh2s.onrender.com
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Repositorio del backend
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El backend está desarrollado en Spring Boot y desplegado en Render:
+👉 [cv-analyzer-backend](https://github.com/Pau-Balsach/cv-analyzer-backend)
