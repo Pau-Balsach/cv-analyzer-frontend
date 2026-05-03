@@ -172,6 +172,9 @@ export default function HistoryPage() {
               const matches = analysisMatches[item.analysisId] ?? []
               const isLoadingMatches = loadingMatches[item.analysisId] ?? false
 
+              // Flecha solo si este análisis tiene al menos un job match
+              const hasJobMatches = jobMatches.some(m => m.analysisId === item.analysisId)
+
               return (
                 <div
                   key={item.analysisId}
@@ -204,29 +207,31 @@ export default function HistoryPage() {
                         {t.view_btn}
                       </span>
 
-                      {/* Botón acordeón — Fase 5 */}
-                      <button
-                        onClick={() => toggleExpand(item.analysisId)}
-                        className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
-                        title={isExpanded ? 'Ocultar matches' : 'Ver job matches'}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
+                      {/* Flecha acordeón — solo si tiene job matches */}
+                      {hasJobMatches && (
+                        <button
+                          onClick={() => toggleExpand(item.analysisId)}
+                          className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
+                          title={isExpanded ? 'Ocultar matches' : 'Ver job matches'}
                         >
-                          <path
-                            fillRule="evenodd"
-                            d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {/* ── Acordeón de job matches — Fase 5 ── */}
+                  {/* ── Acordeón de job matches ── */}
                   {isExpanded && (
                     <div className="border-t border-gray-100 px-5 pb-4 pt-3 bg-gray-50">
                       {isLoadingMatches ? (
@@ -287,7 +292,7 @@ export default function HistoryPage() {
                 ? 'bg-green-50 border-green-200' : match.matchScore >= 40
                 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'
 
-              // Cruzar con el historial de análisis para mostrar a qué CV pertenece
+              // Cruzar con el historial para mostrar a qué análisis pertenece
               const linkedAnalysis = history.find(h => h.analysisId === match.analysisId)
 
               return (
@@ -306,7 +311,7 @@ export default function HistoryPage() {
                       <p className="font-medium text-gray-800">
                         {t.jobmatch_label}{match.jobMatchId.slice(0, 8)}
                       </p>
-                      {/* Referencia al análisis/CV ── AÑADIDO */}
+                      {/* Referencia al análisis vinculado */}
                       {linkedAnalysis && (
                         <p className="text-xs text-gray-400">
                           📄 {t.analysis_label}{linkedAnalysis.analysisId.slice(0, 8)}
