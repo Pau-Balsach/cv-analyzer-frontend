@@ -22,7 +22,6 @@ function HistorySkeleton() {
         <Skeleton className="h-5 w-36" />
       </header>
       <main className="max-w-3xl mx-auto px-4 py-10">
-        {/* Análisis skeleton */}
         <Skeleton className="h-8 w-56 mb-6" />
         <div className="space-y-4">
           {[1, 2, 3].map(i => (
@@ -39,7 +38,6 @@ function HistorySkeleton() {
           ))}
         </div>
 
-        {/* Job matches skeleton */}
         <Skeleton className="h-8 w-64 mt-12 mb-6" />
         <div className="space-y-4">
           {[1, 2].map(i => (
@@ -88,7 +86,6 @@ export default function HistoryPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
 
-      // Guardamos token y userId para usarlos en toggleExpand
       setSessionData({ token: session.access_token, userId: session.user.id })
 
       const [analysesData, jobMatchesData] = await Promise.all([
@@ -112,7 +109,6 @@ export default function HistoryPage() {
 
     setExpanded(analysisId)
 
-    // Solo cargamos si no lo habíamos cargado antes
     if (!analysisMatches[analysisId] && sessionData) {
       setLoadingMatches(prev => ({ ...prev, [analysisId]: true }))
       try {
@@ -183,7 +179,6 @@ export default function HistoryPage() {
                 >
                   {/* ── Cabecera de la tarjeta ── */}
                   <div className="p-5 flex items-center justify-between">
-                    {/* Score + info — navega al resultado */}
                     <div
                       className="flex items-center gap-4 cursor-pointer flex-1"
                       onClick={() => router.push(`/dashboard/result/${item.analysisId}`)}
@@ -202,7 +197,6 @@ export default function HistoryPage() {
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      {/* Botón ver resultado */}
                       <span
                         className="text-blue-600 text-sm hover:underline cursor-pointer"
                         onClick={() => router.push(`/dashboard/result/${item.analysisId}`)}
@@ -293,6 +287,9 @@ export default function HistoryPage() {
                 ? 'bg-green-50 border-green-200' : match.matchScore >= 40
                 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'
 
+              // Cruzar con el historial de análisis para mostrar a qué CV pertenece
+              const linkedAnalysis = history.find(h => h.analysisId === match.analysisId)
+
               return (
                 <div
                   key={match.jobMatchId}
@@ -309,6 +306,22 @@ export default function HistoryPage() {
                       <p className="font-medium text-gray-800">
                         {t.jobmatch_label}{match.jobMatchId.slice(0, 8)}
                       </p>
+                      {/* Referencia al análisis/CV ── AÑADIDO */}
+                      {linkedAnalysis && (
+                        <p className="text-xs text-gray-400">
+                          📄 {t.analysis_label}{linkedAnalysis.analysisId.slice(0, 8)}
+                          {' · '}
+                          <span
+                            className="text-blue-400 hover:underline"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/dashboard/result/${linkedAnalysis.analysisId}`)
+                            }}
+                          >
+                            ver CV
+                          </span>
+                        </p>
+                      )}
                       <p className="text-sm text-gray-400">
                         {match.matchedSkills.length} {t.matched_skills_count}
                       </p>

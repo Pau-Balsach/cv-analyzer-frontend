@@ -33,6 +33,7 @@ export interface Analysis {
 
 export interface JobMatchItem {
   jobMatchId: string
+  analysisId: string   
   matchScore: number
   matchedSkills: string[]
   missingSkills: string[]
