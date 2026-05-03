@@ -46,6 +46,19 @@
     "completed": "Completed",
     "failed": "Failed",
     "processing": "Processing...",
-    "view_btn": "View result →"
+    "view_btn": "View result →",
+    "jobmatch_heading": "Job match history",
+    "jobmatch_empty": "You haven't compared your CV with any job offer yet",
+    "jobmatch_label": "Match #",
+    "matched_skills_count": "skills matched"
+  },
+  "jobmatch_detail": {
+    "title": "CV Analyzer",
+    "back_btn": "← Back to history",
+    "compatibility": "Job compatibility",
+    "matched_skills": "Skills you have",
+    "missing_skills": "Skills you're missing",
+    "recommendations": "Recommendations",
+    "not_found": "Match not found"
   }
 }

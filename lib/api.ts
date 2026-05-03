@@ -24,8 +24,6 @@ export async function uploadCv(file: File, token: string, userId: string) {
   return response.json()
 }
 
-
-
 export async function getAnalysis(analysisId: string, token: string, userId: string) {
   const response = await fetch(`${API_URL}/api/analysis/${analysisId}`, {
     headers: {
@@ -38,7 +36,12 @@ export async function getAnalysis(analysisId: string, token: string, userId: str
   return response.json()
 }
 
-export async function jobMatch(analysisId: string, jobDescription: string, token: string, userId: string) {
+export async function jobMatch(
+  analysisId: string,
+  jobDescription: string,
+  token: string,
+  userId: string
+) {
   const response = await fetch(`${API_URL}/api/analysis/${analysisId}/job-match`, {
     method: 'POST',
     headers: {
@@ -63,5 +66,38 @@ export async function getHistory(token: string, userId: string) {
   })
 
   if (!response.ok) throw new Error('Error obteniendo el historial')
+  return response.json()
+}
+
+// Historial global de job matches del usuario
+export async function getJobMatchHistory(token: string, userId: string) {
+  const response = await fetch(`${API_URL}/api/history/job-matches`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'X-User-Id': userId,
+    },
+  })
+
+  if (!response.ok) throw new Error('Error obteniendo historial de job matches')
+  return response.json()
+}
+
+// Job matches de un análisis concreto
+export async function getJobMatchesByAnalysis(
+  analysisId: string,
+  token: string,
+  userId: string
+) {
+  const response = await fetch(
+    `${API_URL}/api/history/analyses/${analysisId}/job-matches`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'X-User-Id': userId,
+      },
+    }
+  )
+
+  if (!response.ok) throw new Error('Error obteniendo job matches del análisis')
   return response.json()
 }
