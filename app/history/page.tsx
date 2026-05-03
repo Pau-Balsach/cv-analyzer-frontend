@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { getHistory, getJobMatchHistory } from '@/lib/api'
+import { getHistory, getJobMatchHistory, getJobMatchesByAnalysis } from '@/lib/api'
 import { useLocale } from '@/lib/useLocale'
 import type { HistoryItem, JobMatchItem } from '@/lib/types'
 
@@ -60,6 +60,11 @@ function HistorySkeleton() {
   )
 }
 
+// ─── Helper ───────────────────────────────────────────────────────────────────
+function scoreColor(score: number) {
+  return score >= 70 ? 'text-green-600' : score >= 40 ? 'text-yellow-500' : 'text-red-500'
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function HistoryPage() {
   const router = useRouter()
@@ -69,12 +74,22 @@ export default function HistoryPage() {
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [jobMatches, setJobMatches] = useState<JobMatchItem[]>([])
   const [loading, setLoading] = useState(true)
+
+  // ── Fase 5: estado del acordeón ──────────────────────────────────────────
+  const [expanded, setExpanded] = useState<string | null>(null)
+  const [analysisMatches, setAnalysisMatches] = useState<Record<string, JobMatchItem[]>>({})
+  const [loadingMatches, setLoadingMatches] = useState<Record<string, boolean>>({})
+  const [sessionData, setSessionData] = useState<{ token: string; userId: string } | null>(null)
+
   const supabase = createClient()
 
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { router.push('/login'); return }
+
+      // Guardamos token y userId para usarlos en toggleExpand
+      setSessionData({ token: session.access_token, userId: session.user.id })
 
       const [analysesData, jobMatchesData] = await Promise.all([
         getHistory(session.access_token, session.user.id),
@@ -87,6 +102,33 @@ export default function HistoryPage() {
     }
     load()
   }, [])
+
+  // ── Fase 5: toggle del acordeón ──────────────────────────────────────────
+  async function toggleExpand(analysisId: string) {
+    if (expanded === analysisId) {
+      setExpanded(null)
+      return
+    }
+
+    setExpanded(analysisId)
+
+    // Solo cargamos si no lo habíamos cargado antes
+    if (!analysisMatches[analysisId] && sessionData) {
+      setLoadingMatches(prev => ({ ...prev, [analysisId]: true }))
+      try {
+        const matches = await getJobMatchesByAnalysis(
+          analysisId,
+          sessionData.token,
+          sessionData.userId
+        )
+        setAnalysisMatches(prev => ({ ...prev, [analysisId]: matches }))
+      } catch {
+        setAnalysisMatches(prev => ({ ...prev, [analysisId]: [] }))
+      } finally {
+        setLoadingMatches(prev => ({ ...prev, [analysisId]: false }))
+      }
+    }
+  }
 
   if (loading) return <HistorySkeleton />
 
@@ -120,36 +162,114 @@ export default function HistoryPage() {
         ) : (
           <div className="space-y-4">
             {history.map((item) => {
-              const scoreColor = item.score >= 70
+              const color = item.score >= 70
                 ? 'text-green-600' : item.score >= 40
                 ? 'text-yellow-500' : 'text-red-500'
-              const scoreBg = item.score >= 70
+              const bg = item.score >= 70
                 ? 'bg-green-50 border-green-200' : item.score >= 40
                 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'
               const statusLabel = item.status === 'COMPLETED' ? t.completed
                 : item.status === 'FAILED' ? t.failed
                 : t.processing
 
+              const isExpanded = expanded === item.analysisId
+              const matches = analysisMatches[item.analysisId] ?? []
+              const isLoadingMatches = loadingMatches[item.analysisId] ?? false
+
               return (
                 <div
                   key={item.analysisId}
-                  className="bg-white rounded-xl shadow-sm p-5 flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => router.push(`/dashboard/result/${item.analysisId}`)}
+                  className="bg-white rounded-xl shadow-sm overflow-hidden transition-shadow hover:shadow-md"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-14 h-14 rounded-full border-2 flex items-center justify-center ${scoreBg}`}>
-                      <span className={`text-lg font-bold ${scoreColor}`}>
-                        {item.status === 'COMPLETED' ? item.score : '...'}
-                      </span>
+                  {/* ── Cabecera de la tarjeta ── */}
+                  <div className="p-5 flex items-center justify-between">
+                    {/* Score + info — navega al resultado */}
+                    <div
+                      className="flex items-center gap-4 cursor-pointer flex-1"
+                      onClick={() => router.push(`/dashboard/result/${item.analysisId}`)}
+                    >
+                      <div className={`w-14 h-14 rounded-full border-2 flex items-center justify-center ${bg}`}>
+                        <span className={`text-lg font-bold ${color}`}>
+                          {item.status === 'COMPLETED' ? item.score : '...'}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800">
+                          {t.analysis_label}{item.analysisId.slice(0, 8)}
+                        </p>
+                        <p className="text-sm text-gray-400">{statusLabel}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-800">
-                        {t.analysis_label}{item.analysisId.slice(0, 8)}
-                      </p>
-                      <p className="text-sm text-gray-400">{statusLabel}</p>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      {/* Botón ver resultado */}
+                      <span
+                        className="text-blue-600 text-sm hover:underline cursor-pointer"
+                        onClick={() => router.push(`/dashboard/result/${item.analysisId}`)}
+                      >
+                        {t.view_btn}
+                      </span>
+
+                      {/* Botón acordeón — Fase 5 */}
+                      <button
+                        onClick={() => toggleExpand(item.analysisId)}
+                        className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
+                        title={isExpanded ? 'Ocultar matches' : 'Ver job matches'}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
                     </div>
                   </div>
-                  <span className="text-blue-600 text-sm hover:underline">{t.view_btn}</span>
+
+                  {/* ── Acordeón de job matches — Fase 5 ── */}
+                  {isExpanded && (
+                    <div className="border-t border-gray-100 px-5 pb-4 pt-3 bg-gray-50">
+                      {isLoadingMatches ? (
+                        <div className="space-y-2">
+                          {[1, 2].map(i => (
+                            <div key={i} className="flex items-center justify-between bg-white rounded-lg px-4 py-3">
+                              <Skeleton className="h-3 w-32" />
+                              <Skeleton className="h-3 w-10" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : matches.length === 0 ? (
+                        <p className="text-sm text-gray-400 py-2 text-center">
+                          Sin comparaciones aún
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {matches.map(match => (
+                            <div
+                              key={match.jobMatchId}
+                              className="flex items-center justify-between bg-white rounded-lg px-4 py-3
+                                         cursor-pointer hover:bg-blue-50 transition-colors border border-transparent
+                                         hover:border-blue-100"
+                              onClick={() => router.push(`/history/job-match/${match.jobMatchId}`)}
+                            >
+                              <span className="text-sm text-gray-600">
+                                Match #{match.jobMatchId.slice(0, 8)}
+                              </span>
+                              <span className={`text-sm font-bold ${scoreColor(match.matchScore)}`}>
+                                {match.matchScore}%
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -166,10 +286,10 @@ export default function HistoryPage() {
         ) : (
           <div className="space-y-4">
             {jobMatches.map((match) => {
-              const scoreColor = match.matchScore >= 70
+              const color = match.matchScore >= 70
                 ? 'text-green-600' : match.matchScore >= 40
                 ? 'text-yellow-500' : 'text-red-500'
-              const scoreBg = match.matchScore >= 70
+              const bg = match.matchScore >= 70
                 ? 'bg-green-50 border-green-200' : match.matchScore >= 40
                 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'
 
@@ -180,8 +300,8 @@ export default function HistoryPage() {
                   onClick={() => router.push(`/history/job-match/${match.jobMatchId}`)}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-14 h-14 rounded-full border-2 flex items-center justify-center ${scoreBg}`}>
-                      <span className={`text-lg font-bold ${scoreColor}`}>
+                    <div className={`w-14 h-14 rounded-full border-2 flex items-center justify-center ${bg}`}>
+                      <span className={`text-lg font-bold ${color}`}>
                         {match.matchScore}%
                       </span>
                     </div>
