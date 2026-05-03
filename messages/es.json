@@ -2,6 +2,7 @@
   "dashboard": {
     "title": "CV Analyzer",
     "logout": "Cerrar sesión",
+    "history_btn": "Historial",
     "heading": "Analiza tu CV con IA",
     "subheading": "Sube tu CV en PDF y recibe feedback profesional en segundos",
     "dropzone_text": "Arrastra tu CV aquí o",
