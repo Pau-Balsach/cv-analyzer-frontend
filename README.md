@@ -72,23 +72,36 @@ npm run dev
 ---
 
 ## Estructura del proyecto
-
+ 
 ```
 app/
-├── (auth)/
-│   ├── login/page.tsx
-│   └── register/page.tsx
 ├── dashboard/
-│   ├── page.tsx               # Subida del CV (drag & drop)
-│   └── result/[id]/page.tsx   # Resultado del análisis
+│   ├── page.tsx                          # Subida del CV (drag & drop)
+│   └── result/
+│       └── page.tsx                      # Resultado del análisis
 ├── history/
-│   └── page.tsx               # Historial de análisis
-└── layout.tsx
-
+│   ├── page.tsx                          # Historial de análisis
+│   └── job-match/
+│       └── [jobMatchId]/
+│           └── page.tsx                  # Detalle de un job match
+├── login/
+│   └── page.tsx                          # Inicio de sesión
+├── register/
+│   └── page.tsx                          # Registro
+├── layout.tsx
+└── page.tsx                              # Landing page
+ 
 lib/
-├── api.ts                     # Llamadas al backend (fetch + headers)
-└── supabase.ts                # Cliente Supabase
+├── api.ts                                # Llamadas al backend (fetch + headers)
+├── supabase.ts                           # Cliente Supabase
+├── types.ts                              # Tipos TypeScript compartidos
+└── useLocale.ts                          # Hook de internacionalización
+ 
+messages/
+├── en.json                               # Traducciones en inglés
+└── es.json                               # Traducciones en español
 ```
+ 
 
 ---
 

@@ -6,9 +6,18 @@ function getLang(): string {
   return ['es', 'en', 'fr', 'de', 'pt'].includes(lang) ? lang : 'en'
 }
 
+function sanitizeFileName(name: string): string {
+  return name
+    .normalize('NFD')                      // descompone tildes: á → a + ́
+    .replace(/[\u0300-\u036f]/g, '')       // elimina los diacríticos sueltos
+    .replace(/[^\w.\-]/g, '_')             // sustituye cualquier char raro por _
+}
+
 export async function uploadCv(file: File, token: string, userId: string) {
+  const safeFileName = sanitizeFileName(file.name)
+  const safeFile = new File([file], safeFileName, { type: file.type })
   const formData = new FormData()
-  formData.append('file', file)
+  formData.append('file', safeFile, safeFileName)
 
   const response = await fetch(`${API_URL}/api/cv/upload`, {
     method: 'POST',
