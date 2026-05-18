@@ -1,4 +1,4 @@
-const API_URL = '/backend'
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? ''
 
 function getLang(): string {
   if (typeof navigator === 'undefined') return 'en'
